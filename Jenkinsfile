@@ -10,6 +10,7 @@ pipeline {
                 }
             }
         }
+    }
 
         stage ('Testing Stage') {
 
@@ -28,5 +29,6 @@ pipeline {
                 }
             }
         }
+}
     
 
