@@ -1,34 +1,39 @@
-pipeline {
+pipline{
     agent any
+    tools{
+        maven 'mavenA'
+    }
+     parameters {
+              string(name: 'tomcat_staging',defaultValue: '54.153.158.154', description: 'Remote Staging Server')
+}                  
 
-    stages {
-        stage ('Compile Stage') {
+    stages{
+        stage ('Build') {
+            steps{
+                sh 'mvn clean package'
+            }
 
-            steps {
-                withMaven(maven : 'maven_3_9_4') {
-                    sh 'mvn clean compile'
-                }
+            post {
+                success {
+                     echo 'Archiving the artifacts: '***/target/*.war'
+                     archiveArtifacts artifacts: '**/target/*.war'
+               }
+         }
+      
+      }
+          
+        stage ('Deploy to tomcat server') {
+            parallel{
+                stage ("Deploy to Staging") {
+                   steps {
+                    sh "scp -v -o StrictHostKeyChecking=no **/*.war root@${params.tomcat_staging):/home/ec2-user/apache-tomcat-8.5.93 /webapps/"
             }
         }
-        stage ('Testing Stage') 
-            steps {
-                withMaven(maven : 'maven_3_9_4') {
-                    sh 'mvn test'
-                }
-            }
-        }
-        stage ('Deployment Stage') {
-            steps {
-                withMaven(maven : 'maven_3_9_4') {
-                     'deploy adapters: [tomcat8(credentialsId: 'af300c04-859c-4be3-802c-165604a7231c', path: '', url: 'http://54.153.158.154:8088/')], contextPath: null, war: '**/*.war'
-                         
-            }
-        }
+      }
+    }
+  }
 }
-}
-               
-                    
-    
+
     
 
     
